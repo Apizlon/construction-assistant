@@ -23,13 +23,13 @@ public class UserApplicationService : IUserApplicationService
     {
         if (request.Role == UserRole.Admin)
         {
-            throw new BadRequestException("Admin role cannot be assigned during registration");
+            throw new BadRequestException(RegistrationError.ADMIN_REGISTRATION_ATTEMPT.ToString());
         }
 
         var normalizedEmail = NormalizeEmail(request.Email);
         if (await _userRepository.EmailExistsAsync(normalizedEmail))
         {
-            throw new BadRequestException("Email already in use");
+            throw new BadRequestException(RegistrationError.EMAIL_ALREADY_USED.ToString());
         }
 
         var user = new User
@@ -96,4 +96,3 @@ public class UserApplicationService : IUserApplicationService
         return Convert.ToBase64String(hashedBytes);
     }
 }
-
