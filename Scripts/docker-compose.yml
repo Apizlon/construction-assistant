@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5301:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
+    networks:
+      - microservices_network
+
+  user_service:
+    build:
+      context: ..
+      dockerfile: Scripts/Dockerfile.UserService
+    container_name: user_service
+    environment:
+      ASPNETCORE_URLS: http://+:5002
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=user_db;Username=postgres;Password=postgres"
+    ports:
+      - "5002:5002"
+    depends_on:
+      - postgres
+    networks:
+      - microservices_network
+    restart: on-failure
+
+  auth_service:
+    build:
+      context: ..
+      dockerfile: Scripts/Dockerfile.AuthService
+    container_name: auth_service
+    environment:
+      ASPNETCORE_URLS: http://+:5001
+      Jwt__Key: "your-super-secret-key-that-must-be-very-long-for-security-purposes-minimum-32-chars"
+      Jwt__Issuer: "ConstructionAssistant"
+      Jwt__Audience: "ConstructionAssistantUsers"
+      Jwt__ExpirationMinutes: "60"
+      Services__UserServiceUrl: "http://user_service:5002"
+    ports:
+      - "5001:5001"
+    depends_on:
+      - user_service
+    networks:
+      - microservices_network
+    restart: on-failure
+
+volumes:
+  postgres_data:
+
+networks:
+  microservices_network:
+    driver: bridge
+

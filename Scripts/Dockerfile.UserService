@@ -1,0 +1,25 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 as build
+WORKDIR /src
+
+COPY ["UserService/UserService.Api/UserService.Api.csproj", "UserService/UserService.Api/"]
+COPY ["UserService/UserService.Application/UserService.Application.csproj", "UserService/UserService.Application/"]
+COPY ["UserService/UserService.DataAccess/UserService.DataAccess.csproj", "UserService/UserService.DataAccess/"]
+
+RUN dotnet restore "UserService/UserService.Api/UserService.Api.csproj"
+
+COPY UserService/ UserService/
+
+RUN dotnet build "UserService/UserService.Api/UserService.Api.csproj" -c Release -o /app/build
+
+FROM build as publish
+RUN dotnet publish "UserService/UserService.Api/UserService.Api.csproj" -c Release -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+
+COPY --from=publish /app/publish .
+
+EXPOSE 5002
+
+ENTRYPOINT ["dotnet", "UserService.Api.dll"]
+
