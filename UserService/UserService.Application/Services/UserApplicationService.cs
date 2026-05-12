@@ -82,7 +82,7 @@ public class UserApplicationService : IUserApplicationService
         {
             Id = user.Id.ToString(),
             Email = user.Email,
-            RegistrationDate = user.RegistrationDate,
+            RegistrationDate = DateTime.SpecifyKind(user.RegistrationDate.AddHours(3), DateTimeKind.Utc),
             Role = user.Role
         };
     }
