@@ -101,7 +101,7 @@ export function pickBalancedOption(options: OptionMeta[], priorities: Priorities
 export function estimateProject(buildingType: BuildingType | null, areaM2: number | null, selected: Record<string, string | null>, selectedMulti: Record<string, string[]>): BuilderEstimate {
   const area = areaM2 && areaM2 > 0 ? areaM2 : 0;
 
-  const basePerM2 = buildingType === "apartment" ? 45000 : buildingType === "warehouse" ? 35000 : buildingType === "office" ? 55000 : 65000;
+  const basePerM2 = buildingType === "apartment" ? 65000 : buildingType === "warehouse" ? 45000 : buildingType === "office" ? 75000 : 90000;
 
   let factor = 1;
   if (selected["builder.windows"] === "panoramic") factor += 0.08;
@@ -127,14 +127,14 @@ export function estimateProject(buildingType: BuildingType | null, areaM2: numbe
 
   const total = Math.round(area * basePerM2 * factor);
 
-  const baseMonths = Math.max(2, Math.round(area / 35));
+  const baseMonths = Math.max(3, Math.round(area / 25));
   let months = baseMonths;
   if (selected["builder.finish"] === "premium") months += 2;
   if (selected["builder.electricity"] === "smart") months += 1;
   if (selected["builder.furniture"] === "turnkey") months += 1;
   if (heatingValues.includes("floor")) months += 1;
   if (buildingType === "warehouse") months = Math.max(1, Math.round(area / 200) + 1);
-  if (buildingType === "apartment") months = Math.max(2, Math.round(area / 30) + 2);
+  if (buildingType === "apartment") months = Math.max(3, Math.round(area / 25) + 2);
 
   return { totalRub: total, months };
 }

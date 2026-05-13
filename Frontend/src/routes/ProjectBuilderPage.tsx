@@ -61,6 +61,12 @@ function formatRub(n: number) {
   return n.toLocaleString("ru-RU");
 }
 
+function sizeLabel(score0to10: number) {
+  if (score0to10 <= 3) return "малый";
+  if (score0to10 <= 6) return "средний";
+  return "большой";
+}
+
 export function ProjectBuilderPage() {
   const { projectId } = useParams();
   const { user } = useAuth();
@@ -113,10 +119,10 @@ export function ProjectBuilderPage() {
         kind: "option",
         stepCode: stepCodes.state_now,
         options: [
-          { code: "bare", title: "Без отделки", subtitle: "Бетон/минимум от застройщика", cost: 4, time: 5 },
-          { code: "rough", title: "Черновая", subtitle: "Стены/пол под чистовую", cost: 5, time: 6 },
-          { code: "whitebox", title: "White box", subtitle: "Почти готово, нужна чистовая", cost: 6, time: 5 },
-          { code: "finished", title: "Чистовая", subtitle: "Нужен косметический/частичный ремонт", cost: 3, time: 3 }
+          { code: "bare", title: "Без отделки", subtitle: "Бетон/минимум от застройщика", cost: 7, time: 7 },
+          { code: "rough", title: "Черновая", subtitle: "Стены/пол под чистовую", cost: 6, time: 6 },
+          { code: "whitebox", title: "White box", subtitle: "Почти готово, нужна чистовая", cost: 4, time: 4 },
+          { code: "finished", title: "Чистовая", subtitle: "Нужен косметический/частичный ремонт", cost: 2, time: 3 }
         ]
       },
       {
@@ -129,18 +135,6 @@ export function ProjectBuilderPage() {
           { code: "cosmetic", title: "Косметический", subtitle: "Обновить без глобальной переделки", cost: 3, time: 3 },
           { code: "major", title: "Капитальный", subtitle: "Инженерия + выравнивание + отделка", cost: 6, time: 7 },
           { code: "turnkey", title: "Под ключ", subtitle: "Включая мебель/оснащение", cost: 8, time: 8 }
-        ]
-      },
-      {
-        step: "finish",
-        title: "Уровень отделки (желаемый)",
-        subtitle: "Чистовая или премиум",
-        kind: "option",
-        stepCode: stepCodes.finish,
-        options: [
-          { code: "rough", title: "Черновая", subtitle: "Под последующую чистовую", cost: 4, time: 4 },
-          { code: "standard", title: "Чистовая", subtitle: "Можно заезжать", cost: 6, time: 6 },
-          { code: "premium", title: "Премиум", subtitle: "Дороже и дольше", cost: 9, time: 8 }
         ]
       },
       {
@@ -546,15 +540,15 @@ export function ProjectBuilderPage() {
                     {o.icon && <span className="text-xl">{o.icon}</span>}
                     <span>{o.title}</span>
                   </div>
-                  {o.subtitle && <div className="mt-1 text-sm text-slate-400">{o.subtitle}</div>}
-                  <div className="mt-3 text-xs text-slate-500 flex items-center justify-between">
-                    <span>Бюджет: {o.cost}/10</span>
-                    <span>Срок: {o.time}/10</span>
-                  </div>
-                  {getAnswer(answers, current.stepCode!)?.source === "Balanced" && selected && (
-                    <div className="mt-2 text-xs text-emerald-300/80">Сбалансированный выбор</div>
-                  )}
-                </button>
+                {o.subtitle && <div className="mt-1 text-sm text-slate-400">{o.subtitle}</div>}
+                <div className="mt-3 text-xs text-slate-500 flex items-center justify-between">
+                  <span>Бюджет: {sizeLabel(o.cost)}</span>
+                  <span>Срок: {sizeLabel(o.time)}</span>
+                </div>
+                {getAnswer(answers, current.stepCode!)?.source === "Balanced" && selected && (
+                  <div className="mt-2 text-xs text-emerald-300/80">Сбалансированный выбор</div>
+                )}
+              </button>
               );
             })}
           </div>
@@ -591,8 +585,8 @@ export function ProjectBuilderPage() {
                 </div>
                 {o.subtitle && <div className="mt-1 text-sm text-slate-400">{o.subtitle}</div>}
                 <div className="mt-3 text-xs text-slate-500 flex items-center justify-between">
-                  <span>Бюджет: {o.cost}/10</span>
-                  <span>Срок: {o.time}/10</span>
+                  <span>Бюджет: {sizeLabel(o.cost)}</span>
+                  <span>Срок: {sizeLabel(o.time)}</span>
                 </div>
                 <div className="mt-2 text-xs text-slate-500">{selected ? "Выбрано" : "Нажмите, чтобы выбрать"}</div>
               </button>
