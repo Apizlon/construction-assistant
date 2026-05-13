@@ -30,5 +30,10 @@ public class ProjectRepository : IProjectRepository
         _dbContext.Projects.Add(project);
         await _dbContext.SaveChangesAsync();
     }
-}
 
+    public async Task UpdateAsync(Project project)
+    {
+        _dbContext.Projects.Update(project);
+        await _dbContext.SaveChangesAsync();
+    }
+}

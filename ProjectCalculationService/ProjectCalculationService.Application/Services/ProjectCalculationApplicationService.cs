@@ -101,6 +101,33 @@ public class ProjectCalculationApplicationService : IProjectCalculationApplicati
         return MapProject(project);
     }
 
+    public async Task<ProjectResponse> UpdateProjectAsync(string projectId, UpdateProjectRequest request)
+    {
+        if (!Guid.TryParse(projectId, out var id))
+        {
+            throw new BadRequestException("Invalid projectId");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            throw new BadRequestException("Project name is required");
+        }
+
+        var project = await _projectRepository.GetByIdAsync(id);
+        if (project == null)
+        {
+            throw new NotFoundException("Project not found");
+        }
+
+        project.Name = request.Name.Trim();
+        project.UpdatedAt = DateTime.UtcNow;
+
+        await _projectRepository.UpdateAsync(project);
+        _logger.LogInformation("Project updated - {ProjectId}", project.Id);
+
+        return MapProject(project);
+    }
+
     public async Task<IReadOnlyList<StepAnswerResponse>> GetProjectAnswersAsync(string projectId)
     {
         if (!Guid.TryParse(projectId, out var id))
@@ -351,4 +378,3 @@ public class ProjectCalculationApplicationService : IProjectCalculationApplicati
         return $"{new string(chars[..4])}-{new string(chars[4..])}";
     }
 }
-

@@ -38,5 +38,10 @@ public class ProjectsController : ControllerBase
     {
         return _service.GetProjectAsync(projectId);
     }
-}
 
+    [HttpPatch("{projectId}")]
+    public Task<ProjectResponse> Update([FromRoute] string projectId, [FromBody] UpdateProjectRequest request)
+    {
+        return _service.UpdateProjectAsync(projectId, request);
+    }
+}

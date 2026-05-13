@@ -7,6 +7,7 @@ import { FeedbackPage } from "./FeedbackPage";
 import { ProfilePage } from "./ProfilePage";
 import { ProjectPage } from "./ProjectPage";
 import { PassportPage } from "./PassportPage";
+import { ProjectBuilderPage } from "./ProjectBuilderPage";
 import { useAuth } from "../state/auth";
 
 function NonAdminOnly({ children }: { children: React.ReactNode }) {
@@ -49,6 +50,14 @@ export function App() {
           element={
             <NonAdminOnly>
               <PassportPage />
+            </NonAdminOnly>
+          }
+        />
+        <Route
+          path="projects/:projectId/builder"
+          element={
+            <NonAdminOnly>
+              <ProjectBuilderPage />
             </NonAdminOnly>
           }
         />

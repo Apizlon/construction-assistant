@@ -8,6 +8,7 @@ public interface IProjectCalculationApplicationService
     Task<IReadOnlyList<ProjectListItemResponse>> GetOwnedProjectsAsync(string ownerUserId);
     Task<IReadOnlyList<ProjectListItemResponse>> GetViewerProjectsAsync(string userId);
     Task<ProjectResponse> GetProjectAsync(string projectId);
+    Task<ProjectResponse> UpdateProjectAsync(string projectId, UpdateProjectRequest request);
 
     Task<IReadOnlyList<StepAnswerResponse>> GetProjectAnswersAsync(string projectId);
     Task<StepAnswerResponse> UpsertProjectAnswerAsync(string projectId, UpsertStepAnswerRequest request);
@@ -18,4 +19,3 @@ public interface IProjectCalculationApplicationService
     Task<ViewerCommentResponse> AddCommentAsync(string projectId, CreateCommentRequest request);
     Task<IReadOnlyList<ViewerCommentResponse>> GetCommentsAsync(string projectId);
 }
-

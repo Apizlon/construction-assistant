@@ -31,7 +31,10 @@ export function ProjectsPage() {
 
   async function onCreateProject() {
     if (!user) return;
-    if (!newProjectName.trim()) return;
+    if (!newProjectName.trim()) {
+      setLocalError("Введите название проекта");
+      return;
+    }
     setLocalError(null);
     try {
       const created = await createProject(user.id, newProjectName.trim());
