@@ -14,14 +14,16 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const isAdminLogin = email.trim().toLowerCase() === "admin";
+
   const validationError =
     !email.trim()
       ? "Введите email"
-      : !isValidEmail(email)
+      : !isAdminLogin && !isValidEmail(email)
         ? "Введите корректный email"
         : !password
           ? "Введите пароль"
-          : !isValidPassword(password)
+          : !isAdminLogin && !isValidPassword(password)
             ? "Пароль должен быть минимум 6 символов"
             : null;
 
