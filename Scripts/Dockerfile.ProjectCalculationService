@@ -1,0 +1,25 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 as build
+WORKDIR /src
+
+COPY ["ProjectCalculationService/ProjectCalculationService.Api/ProjectCalculationService.Api.csproj", "ProjectCalculationService/ProjectCalculationService.Api/"]
+COPY ["ProjectCalculationService/ProjectCalculationService.Application/ProjectCalculationService.Application.csproj", "ProjectCalculationService/ProjectCalculationService.Application/"]
+COPY ["ProjectCalculationService/ProjectCalculationService.DataAccess/ProjectCalculationService.DataAccess.csproj", "ProjectCalculationService/ProjectCalculationService.DataAccess/"]
+
+RUN dotnet restore "ProjectCalculationService/ProjectCalculationService.Api/ProjectCalculationService.Api.csproj"
+
+COPY ProjectCalculationService/ ProjectCalculationService/
+
+RUN dotnet build "ProjectCalculationService/ProjectCalculationService.Api/ProjectCalculationService.Api.csproj" -c Release -o /app/build
+
+FROM build as publish
+RUN dotnet publish "ProjectCalculationService/ProjectCalculationService.Api/ProjectCalculationService.Api.csproj" -c Release -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+
+COPY --from=publish /app/publish .
+
+EXPOSE 5003
+
+ENTRYPOINT ["dotnet", "ProjectCalculationService.Api.dll"]
+

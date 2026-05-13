@@ -10,6 +10,7 @@ public class UserDbContext : DbContext
     }
 
     public DbSet<User> Users { get; set; } = null!;
+    public DbSet<FeedbackMessage> FeedbackMessages { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,6 +37,27 @@ public class UserDbContext : DbContext
                 .HasMaxLength(50);
 
             entity.HasIndex(e => e.Email).IsUnique();
+        });
+
+        modelBuilder.Entity<FeedbackMessage>(entity =>
+        {
+            entity.ToTable("FeedbackMessages");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Email)
+                .IsRequired()
+                .HasMaxLength(256);
+
+            entity.Property(e => e.Message)
+                .IsRequired()
+                .HasMaxLength(4000);
+
+            entity.Property(e => e.CreatedAt)
+                .IsRequired();
+
+            entity.HasIndex(e => e.CreatedAt);
+            entity.HasIndex(e => e.UserId);
         });
     }
 }

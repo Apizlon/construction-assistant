@@ -15,7 +15,7 @@ public partial class SeedData : Migration
             values: new object[]
             {
                 new Guid("550e8400-e29b-41d4-a716-446655440000"),
-                "admin@example.com",
+                "admin",
                 "jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=",
                 new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 "Admin"
