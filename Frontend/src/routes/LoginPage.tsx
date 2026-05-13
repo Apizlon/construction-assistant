@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../api/authApi";
 import { useAuth } from "../state/auth";
-import { PageShell } from "./ui";
+import { AuthShell } from "./ui";
 import { getRuErrorMessage } from "../utils/errors";
 import { isValidEmail, isValidPassword } from "../utils/validation";
 
@@ -45,8 +45,8 @@ export function LoginPage() {
   }
 
   return (
-    <PageShell title="Вход в аккаунт">
-      <div className="card max-w-md">
+    <AuthShell title="Вход">
+      <div className="card">
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <div className="label mb-1">Email</div>
@@ -68,6 +68,6 @@ export function LoginPage() {
           </div>
         </form>
       </div>
-    </PageShell>
+    </AuthShell>
   );
 }
