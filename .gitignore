@@ -5,6 +5,13 @@
 
 # dotenv files
 .env
+.env.local
+.env.*.local
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
 
 # User-specific files
 *.rsuser

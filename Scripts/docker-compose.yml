@@ -24,6 +24,9 @@ services:
     environment:
       ASPNETCORE_URLS: http://+:5002
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=user_db;Username=postgres;Password=postgres"
+      Jwt__Key: "your-super-secret-key-that-must-be-very-long-for-security-purposes-minimum-32-chars"
+      Jwt__Issuer: "ConstructionAssistant"
+      Jwt__Audience: "ConstructionAssistantUsers"
     ports:
       - "5002:5002"
     depends_on:
@@ -48,6 +51,22 @@ services:
       - "5001:5001"
     depends_on:
       - user_service
+    networks:
+      - microservices_network
+    restart: on-failure
+
+  project_calc_service:
+    build:
+      context: ..
+      dockerfile: Scripts/Dockerfile.ProjectCalculationService
+    container_name: project_calc_service
+    environment:
+      ASPNETCORE_URLS: http://+:5003
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=project_calc_db;Username=postgres;Password=postgres"
+    ports:
+      - "5003:5003"
+    depends_on:
+      - postgres
     networks:
       - microservices_network
     restart: on-failure
