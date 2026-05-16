@@ -31,6 +31,7 @@ builder.Services.AddScoped<IProjectStepAnswerRepository, ProjectStepAnswerReposi
 builder.Services.AddScoped<ISharingRepository, SharingRepository>();
 builder.Services.AddScoped<IViewerCommentRepository, ViewerCommentRepository>();
 builder.Services.AddScoped<IProjectCalculationApplicationService, ProjectCalculationApplicationService>();
+builder.Services.AddScoped<IProjectReportService, ProjectReportService>();
 
 builder.Services.AddLogging(config =>
 {
