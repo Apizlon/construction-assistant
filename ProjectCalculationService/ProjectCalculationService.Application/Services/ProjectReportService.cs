@@ -4,6 +4,7 @@ using ProjectCalculationService.Application.Contracts.Reports;
 using ProjectCalculationService.Application.Exceptions;
 using ProjectCalculationService.Application.Interfaces;
 using ProjectCalculationService.Application.Services.Excel;
+using ProjectCalculationService.Application.Services.Reports;
 
 namespace ProjectCalculationService.Application.Services;
 
@@ -232,7 +233,8 @@ public class ProjectReportService : IProjectReportService
         return safeFormat switch
         {
             "xlsx" => (BuildGanttXlsx(gantt), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"ДиаграммаГанта_проект_{gantt.ProjectId}.xlsx"),
-            _ => throw new BadRequestException("Unsupported format. Use format=xlsx")
+            "html" => (GanttHtmlExporter.BuildHtml(gantt), "text/html; charset=utf-8", $"ДиаграммаГанта_проект_{gantt.ProjectId}.html"),
+            _ => throw new BadRequestException("Unsupported format. Use format=xlsx|html")
         };
     }
 

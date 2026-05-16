@@ -51,8 +51,8 @@ export async function downloadEstimateReportXlsx(projectId: string) {
   return { bytes: data, contentType: headers["content-type"] as string | undefined };
 }
 
-export async function downloadGanttReportXlsx(projectId: string) {
-  const { data, headers } = await projectHttp.get<ArrayBuffer>(`/projects/${projectId}/report/gantt/download?format=xlsx`, { responseType: "arraybuffer" });
+export async function downloadGanttReportHtml(projectId: string) {
+  const { data, headers } = await projectHttp.get<ArrayBuffer>(`/projects/${projectId}/report/gantt/download?format=html`, { responseType: "arraybuffer" });
   return { bytes: data, contentType: headers["content-type"] as string | undefined };
 }
 

@@ -5,7 +5,7 @@ import { addComment, getComments, ViewerComment } from "../api/commentsApi";
 import { createShareCode, getProject, updateProject } from "../api/projectApi";
 import {
   downloadEstimateReportXlsx,
-  downloadGanttReportXlsx,
+  downloadGanttReportHtml,
   getEstimateReport,
   getGanttReport,
   ProjectEstimateBreakdown,
@@ -36,7 +36,7 @@ export function ProjectPage() {
   const [reportsError, setReportsError] = useState<string | null>(null);
   const [estimateReport, setEstimateReport] = useState<ProjectEstimateBreakdown | null>(null);
   const [ganttReport, setGanttReport] = useState<ProjectGantt | null>(null);
-  const [downloading, setDownloading] = useState<"estimate" | "gantt" | null>(null);
+  const [downloading, setDownloading] = useState<"estimate" | "ganttHtml" | null>(null);
 
   useEffect(() => {
     setShareCode(null);
@@ -125,6 +125,11 @@ export function ProjectPage() {
     return null;
   }, [passportComplete]);
 
+  function toRuTitle(title: string) {
+    if (title.trim().toLowerCase() === "lvt") return "LVT (кварцвинил)";
+    return title;
+  }
+
   async function saveBlob(bytes: ArrayBuffer, fileName: string, contentType?: string) {
     const blob = new Blob([bytes], {
       type: contentType || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -142,6 +147,18 @@ export function ProjectPage() {
     }
   }
 
+  function openBlobInNewTab(bytes: ArrayBuffer, contentType: string | undefined) {
+    const blob = new Blob([bytes], { type: contentType || "text/html; charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, "_blank", "noopener,noreferrer");
+    // On some browsers window.open can be blocked; keep url so user still downloaded the file.
+    if (!win) {
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      return;
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }
+
   async function onDownloadEstimate() {
     if (!projectId) return;
     setReportsError(null);
@@ -156,15 +173,18 @@ export function ProjectPage() {
     }
   }
 
-  async function onDownloadGantt() {
+  async function onDownloadGanttHtml() {
     if (!projectId) return;
     setReportsError(null);
-    setDownloading("gantt");
+    setDownloading("ganttHtml");
     try {
-      const { bytes, contentType } = await downloadGanttReportXlsx(projectId);
-      await saveBlob(bytes, `ДиаграммаГанта_проект_${projectId}.xlsx`, contentType);
+      const { bytes, contentType } = await downloadGanttReportHtml(projectId);
+      // 1) Скачивание файла
+      await saveBlob(bytes, `ДиаграммаГанта_проект_${projectId}.html`, contentType);
+      // 2) Быстрый просмотр в новой вкладке
+      openBlobInNewTab(bytes, contentType);
     } catch (e: any) {
-      setReportsError(getRuErrorMessage(e, "Не удалось скачать диаграмму Ганта"));
+      setReportsError(getRuErrorMessage(e, "Не удалось скачать диаграмму Ганта (HTML)"));
     } finally {
       setDownloading(null);
     }
@@ -332,11 +352,11 @@ export function ProjectPage() {
             <div className="text-xs text-slate-500 mt-1">Смета и диаграмма Ганта (оценка)</div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="btn" onClick={onDownloadEstimate} disabled={!estimateReport || downloading !== null}>
+            <button className="btn-primary" onClick={onDownloadEstimate} disabled={!estimateReport || downloading !== null}>
               {downloading === "estimate" ? "Скачивание…" : "Смета (Excel)"}
             </button>
-            <button className="btn" onClick={onDownloadGantt} disabled={!ganttReport || downloading !== null}>
-              {downloading === "gantt" ? "Скачивание…" : "Гант (Excel)"}
+            <button className="btn-primary" onClick={onDownloadGanttHtml} disabled={!ganttReport || downloading !== null}>
+              {downloading === "ganttHtml" ? "Скачивание…" : "Гант (HTML)"}
             </button>
           </div>
         </div>
@@ -388,7 +408,7 @@ export function ProjectPage() {
                   ) : (
                     estimateReport.items.map((it) => (
                       <tr key={it.code} className="border-b border-slate-900">
-                        <td className="py-3 pr-3 text-slate-200">{it.title}</td>
+                        <td className="py-3 pr-3 text-slate-200">{toRuTitle(it.title)}</td>
                         <td className="py-3 pr-3 text-right text-slate-300">{(it.percentDelta * 100).toFixed(0)}%</td>
                         <td className="py-3 pr-0 text-right text-slate-200">{it.deltaRub.toLocaleString("ru-RU")}</td>
                       </tr>
