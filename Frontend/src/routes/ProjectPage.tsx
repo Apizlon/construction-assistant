@@ -3,6 +3,14 @@ import { Link, useParams } from "react-router-dom";
 import { getAnswers } from "../api/answersApi";
 import { addComment, getComments, ViewerComment } from "../api/commentsApi";
 import { createShareCode, getProject, updateProject } from "../api/projectApi";
+import {
+  downloadEstimateReportXlsx,
+  downloadGanttReportXlsx,
+  getEstimateReport,
+  getGanttReport,
+  ProjectEstimateBreakdown,
+  ProjectGantt
+} from "../api/reportsApi";
 import { useAuth } from "../state/auth";
 import { getRuErrorMessage } from "../utils/errors";
 import { getPassportFromAnswers, isPassportComplete } from "../utils/passport";
@@ -23,6 +31,12 @@ export function ProjectPage() {
   const [loadingComments, setLoadingComments] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
   const [estimate, setEstimate] = useState<{ totalRub: number; months: number } | null>(null);
+
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsError, setReportsError] = useState<string | null>(null);
+  const [estimateReport, setEstimateReport] = useState<ProjectEstimateBreakdown | null>(null);
+  const [ganttReport, setGanttReport] = useState<ProjectGantt | null>(null);
+  const [downloading, setDownloading] = useState<"estimate" | "gantt" | null>(null);
 
   useEffect(() => {
     setShareCode(null);
@@ -56,6 +70,24 @@ export function ProjectPage() {
         }
         const est = estimateProject(passport.buildingType, passport.areaM2, selectedSingle, selectedMulti);
         setEstimate(est.totalRub > 0 ? est : null);
+
+        setReportsError(null);
+        setReportsLoading(true);
+        try {
+          const [estimateData, ganttData] = await Promise.all([getEstimateReport(projectId), getGanttReport(projectId)]);
+          if (!cancelled) {
+            setEstimateReport(estimateData);
+            setGanttReport(ganttData);
+          }
+        } catch (e: any) {
+          if (!cancelled) {
+            setEstimateReport(null);
+            setGanttReport(null);
+            setReportsError(getRuErrorMessage(e, "Не удалось загрузить отчёты"));
+          }
+        } finally {
+          if (!cancelled) setReportsLoading(false);
+        }
       } catch {
         if (!cancelled) setPassportComplete(null);
       }
@@ -92,6 +124,51 @@ export function ProjectPage() {
     if (passportComplete === false) return "Заполните паспорт, чтобы начать конструктор";
     return null;
   }, [passportComplete]);
+
+  async function saveBlob(bytes: ArrayBuffer, fileName: string, contentType?: string) {
+    const blob = new Blob([bytes], {
+      type: contentType || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    });
+    const url = URL.createObjectURL(blob);
+    try {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  async function onDownloadEstimate() {
+    if (!projectId) return;
+    setReportsError(null);
+    setDownloading("estimate");
+    try {
+      const { bytes, contentType } = await downloadEstimateReportXlsx(projectId);
+      await saveBlob(bytes, `Смета_проект_${projectId}.xlsx`, contentType);
+    } catch (e: any) {
+      setReportsError(getRuErrorMessage(e, "Не удалось скачать смету"));
+    } finally {
+      setDownloading(null);
+    }
+  }
+
+  async function onDownloadGantt() {
+    if (!projectId) return;
+    setReportsError(null);
+    setDownloading("gantt");
+    try {
+      const { bytes, contentType } = await downloadGanttReportXlsx(projectId);
+      await saveBlob(bytes, `ДиаграммаГанта_проект_${projectId}.xlsx`, contentType);
+    } catch (e: any) {
+      setReportsError(getRuErrorMessage(e, "Не удалось скачать диаграмму Ганта"));
+    } finally {
+      setDownloading(null);
+    }
+  }
 
   async function onShare() {
     if (!projectId) return;
@@ -247,6 +324,118 @@ export function ProjectPage() {
           </div>
         </div>
       )}
+
+      <div className="card">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="font-medium">Отчётность</div>
+            <div className="text-xs text-slate-500 mt-1">Смета и диаграмма Ганта (оценка)</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="btn" onClick={onDownloadEstimate} disabled={!estimateReport || downloading !== null}>
+              {downloading === "estimate" ? "Скачивание…" : "Смета (Excel)"}
+            </button>
+            <button className="btn" onClick={onDownloadGantt} disabled={!ganttReport || downloading !== null}>
+              {downloading === "gantt" ? "Скачивание…" : "Гант (Excel)"}
+            </button>
+          </div>
+        </div>
+
+        {reportsLoading && <div className="mt-3 text-sm text-slate-400">Загрузка отчётов…</div>}
+        {reportsError && <div className="mt-3 text-sm text-rose-300">{reportsError}</div>}
+
+        {estimateReport && (
+          <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+            <div className="flex items-center justify-between">
+              <div className="font-medium">Смета (из чего формируется цена)</div>
+              <div className="text-xs text-slate-500">{new Date(estimateReport.generatedAt).toLocaleString()}</div>
+            </div>
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
+              <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+                <div className="text-xs text-slate-500">База за м²</div>
+                <div className="mt-1 font-semibold">{estimateReport.basePerM2Rub.toLocaleString("ru-RU")} ₽</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+                <div className="text-xs text-slate-500">Площадь</div>
+                <div className="mt-1 font-semibold">{estimateReport.areaM2 ? `${estimateReport.areaM2} м²` : "—"}</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+                <div className="text-xs text-slate-500">Коэффициент</div>
+                <div className="mt-1 font-semibold">× {estimateReport.factor.toFixed(2)}</div>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+                <div className="text-xs text-slate-500">Итого</div>
+                <div className="mt-1 font-semibold">{estimateReport.totalRub.toLocaleString("ru-RU")} ₽</div>
+              </div>
+            </div>
+
+            <div className="mt-4 overflow-auto">
+              <table className="min-w-[720px] w-full text-sm">
+                <thead className="text-xs text-slate-500">
+                  <tr className="border-b border-slate-800">
+                    <th className="py-2 pr-3 text-left font-medium">Пункт</th>
+                    <th className="py-2 pr-3 text-right font-medium">Δ, %</th>
+                    <th className="py-2 pr-0 text-right font-medium">Δ, ₽</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {estimateReport.items.length === 0 ? (
+                    <tr className="border-b border-slate-900">
+                      <td className="py-3 text-slate-400" colSpan={3}>
+                        Нет влияющих факторов (используется базовая ставка).
+                      </td>
+                    </tr>
+                  ) : (
+                    estimateReport.items.map((it) => (
+                      <tr key={it.code} className="border-b border-slate-900">
+                        <td className="py-3 pr-3 text-slate-200">{it.title}</td>
+                        <td className="py-3 pr-3 text-right text-slate-300">{(it.percentDelta * 100).toFixed(0)}%</td>
+                        <td className="py-3 pr-0 text-right text-slate-200">{it.deltaRub.toLocaleString("ru-RU")}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-3 text-xs text-slate-500">
+              База: {estimateReport.baseCostRub.toLocaleString("ru-RU")} ₽ • Срок: ≈ {estimateReport.months} мес.
+            </div>
+          </div>
+        )}
+
+        {ganttReport && (
+          <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+            <div className="flex items-center justify-between">
+              <div className="font-medium">Диаграмма Ганта (последовательность работ)</div>
+              <div className="text-xs text-slate-500">
+                {ganttReport.totalMonths} мес. • {ganttReport.totalDays} дней
+              </div>
+            </div>
+            <div className="mt-3 space-y-2">
+              {ganttReport.tasks.map((t) => {
+                const total = ganttReport.totalDays || 1;
+                const left = Math.max(0, Math.min(100, (t.startDay / total) * 100));
+                const width = Math.max(1, Math.min(100 - left, ((t.endDay - t.startDay) / total) * 100));
+                return (
+                  <div key={t.id} className="grid grid-cols-12 gap-3 items-center">
+                    <div className="col-span-12 md:col-span-4 text-sm text-slate-200">{t.title}</div>
+                    <div className="col-span-12 md:col-span-8">
+                      <div className="h-8 rounded-lg border border-slate-800 bg-slate-950/60 relative overflow-hidden">
+                        <div className="absolute inset-y-0 bg-indigo-600/50" style={{ left: `${left}%`, width: `${width}%` }} />
+                        <div className="absolute inset-0 flex items-center justify-between px-3 text-xs text-slate-300">
+                          <span>день {t.startDay}</span>
+                          <span>день {t.endDay}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="card">
         <div className="flex items-center justify-between">
