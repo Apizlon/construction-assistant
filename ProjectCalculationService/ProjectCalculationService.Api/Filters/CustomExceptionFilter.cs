@@ -25,6 +25,7 @@ public class CustomExceptionFilter : IExceptionFilter
             ArgumentException _ => (int)HttpStatusCode.BadRequest,
             InvalidOperationException _ => (int)HttpStatusCode.BadRequest,
             NotFoundException _ => (int)HttpStatusCode.NotFound,
+            ForbiddenException _ => (int)HttpStatusCode.Forbidden,
             _ => (int)HttpStatusCode.InternalServerError
         };
 
