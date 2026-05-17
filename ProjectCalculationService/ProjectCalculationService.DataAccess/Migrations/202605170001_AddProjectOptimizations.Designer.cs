@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProjectCalculationService.DataAccess;
 
@@ -10,9 +11,10 @@ using ProjectCalculationService.DataAccess;
 namespace ProjectCalculationService.DataAccess.Migrations;
 
 [DbContext(typeof(ProjectCalculationDbContext))]
-public partial class ProjectCalculationDbContextModelSnapshot : ModelSnapshot
+[Migration("202605170001_AddProjectOptimizations")]
+public partial class AddProjectOptimizations
 {
-    protected override void BuildModel(ModelBuilder modelBuilder)
+    protected override void BuildTargetModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
         modelBuilder
@@ -288,3 +290,4 @@ public partial class ProjectCalculationDbContextModelSnapshot : ModelSnapshot
 #pragma warning restore 612, 618
     }
 }
+

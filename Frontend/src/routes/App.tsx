@@ -8,6 +8,7 @@ import { ProfilePage } from "./ProfilePage";
 import { ProjectPage } from "./ProjectPage";
 import { PassportPage } from "./PassportPage";
 import { ProjectBuilderPage } from "./ProjectBuilderPage";
+import { ProjectOptimizationPage } from "./ProjectOptimizationPage";
 import { useAuth } from "../state/auth";
 
 function NonAdminOnly({ children }: { children: React.ReactNode }) {
@@ -58,6 +59,22 @@ export function App() {
           element={
             <NonAdminOnly>
               <ProjectBuilderPage />
+            </NonAdminOnly>
+          }
+        />
+        <Route
+          path="projects/:projectId/optimization"
+          element={
+            <NonAdminOnly>
+              <ProjectOptimizationPage />
+            </NonAdminOnly>
+          }
+        />
+        <Route
+          path="projects/:projectId/optimization/:optimizationId"
+          element={
+            <NonAdminOnly>
+              <ProjectOptimizationPage />
             </NonAdminOnly>
           }
         />

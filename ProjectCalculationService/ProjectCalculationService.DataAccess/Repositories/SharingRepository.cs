@@ -63,5 +63,19 @@ public class SharingRepository : ISharingRepository
 
         return await query.Distinct().ToListAsync();
     }
+
+    public async Task<bool> IsViewerOfProjectAsync(Guid userId, Guid projectId)
+    {
+        var query =
+            from viewer in _dbContext.SharedProjectViewers
+            join share in _dbContext.SharedProjects on viewer.ShareId equals share.Id
+            where viewer.UserId == userId
+                  && viewer.IsActive
+                  && share.IsActive
+                  && share.ProjectId == projectId
+            select viewer.Id;
+
+        return await query.AnyAsync();
+    }
 }
 

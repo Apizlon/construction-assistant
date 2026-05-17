@@ -30,7 +30,9 @@ builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<IProjectStepAnswerRepository, ProjectStepAnswerRepository>();
 builder.Services.AddScoped<ISharingRepository, SharingRepository>();
 builder.Services.AddScoped<IViewerCommentRepository, ViewerCommentRepository>();
+builder.Services.AddScoped<IProjectOptimizationRepository, ProjectOptimizationRepository>();
 builder.Services.AddScoped<IProjectCalculationApplicationService, ProjectCalculationApplicationService>();
+builder.Services.AddScoped<IProjectOptimizationApplicationService, ProjectOptimizationApplicationService>();
 builder.Services.AddScoped<IProjectReportService, ProjectReportService>();
 
 builder.Services.AddLogging(config =>

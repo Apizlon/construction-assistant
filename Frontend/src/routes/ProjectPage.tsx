@@ -251,6 +251,9 @@ export function ProjectPage() {
             <Link className="btn-ghost" to={`/app/projects/${projectId}/passport`}>
               Паспорт
             </Link>
+            <Link className="btn-ghost" to={`/app/projects/${projectId}/optimization`}>
+              Оптимизация
+            </Link>
             <Link className="btn-primary" to={`/app/projects/${projectId}/builder`}>
               Конструктор
             </Link>

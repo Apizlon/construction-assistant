@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ProjectCalculationService.Application.Models;
+using ProjectCalculationService.Application.Models.Optimizations;
 
 namespace ProjectCalculationService.DataAccess;
 
@@ -14,6 +15,7 @@ public class ProjectCalculationDbContext : DbContext
     public DbSet<SharedProject> SharedProjects { get; set; } = null!;
     public DbSet<SharedProjectViewer> SharedProjectViewers { get; set; } = null!;
     public DbSet<ViewerComment> ViewerComments { get; set; } = null!;
+    public DbSet<ProjectOptimization> ProjectOptimizations { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -113,6 +115,36 @@ public class ProjectCalculationDbContext : DbContext
             entity.Property(e => e.CommentDate).IsRequired();
 
             entity.HasIndex(e => new { e.ProjectId, e.CommentDate });
+
+            entity.HasOne<Project>()
+                .WithMany()
+                .HasForeignKey(e => e.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ProjectOptimization>(entity =>
+        {
+            entity.ToTable("project_optimizations");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.TemplateId).IsRequired().HasMaxLength(128);
+
+            entity.Property(e => e.CommunicationType)
+                .HasConversion<string>()
+                .HasMaxLength(64);
+
+            entity.Property(e => e.SelectedVariant)
+                .HasConversion<string>()
+                .HasMaxLength(64);
+
+            entity.Property(e => e.ResultJson)
+                .IsRequired()
+                .HasColumnType("jsonb");
+
+            entity.Property(e => e.CreatedAt).IsRequired();
+
+            entity.HasIndex(e => new { e.ProjectId, e.CreatedAt });
 
             entity.HasOne<Project>()
                 .WithMany()
