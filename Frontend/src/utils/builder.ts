@@ -101,7 +101,8 @@ export function pickBalancedOption(options: OptionMeta[], priorities: Priorities
 export function estimateProject(buildingType: BuildingType | null, areaM2: number | null, selected: Record<string, string | null>, selectedMulti: Record<string, string[]>): BuilderEstimate {
   const area = areaM2 && areaM2 > 0 ? areaM2 : 0;
 
-  const basePerM2 = buildingType === "apartment" ? 65000 : buildingType === "warehouse" ? 45000 : buildingType === "office" ? 75000 : 90000;
+  // Keep in sync with backend estimate calculation (ProjectReportService.GetEstimateAsync)
+  const basePerM2 = buildingType === "apartment" ? 35000 : buildingType === "warehouse" ? 30000 : buildingType === "office" ? 55000 : 60000;
 
   let factor = 1;
   if (selected["builder.windows"] === "panoramic") factor += 0.08;

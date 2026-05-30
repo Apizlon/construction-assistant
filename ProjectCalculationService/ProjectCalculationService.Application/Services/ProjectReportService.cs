@@ -55,11 +55,11 @@ public class ProjectReportService : IProjectReportService
         var areaValue = areaM2 is > 0 ? areaM2.Value : 0;
         var basePerM2 = buildingType switch
         {
-            "apartment" => 65000,
-            "warehouse" => 45000,
-            "office" => 75000,
-            "house" => 90000,
-            _ => 90000
+            "apartment" => 35000,
+            "warehouse" => 30000,
+            "office" => 55000,
+            "house" => 60000,
+            _ => 60000
         };
 
         var items = new List<EstimateBreakdownItemResponse>();
@@ -257,7 +257,9 @@ public class ProjectReportService : IProjectReportService
         };
 
         var smetaRows = new List<IReadOnlyList<object?>>();
-        smetaRows.Add(new object?[] { "Раздел", "Позиция", "Ед.изм.", "Кол-во", "Цена, ₽", "Сумма, ₽", "Примечание" });
+        // A..H: Раздел | Позиция | Ед.изм. | Кол-во | Цена | Сумма (строка) | Итого (агрегации) | Примечание
+        // Totals are kept in a separate column to avoid double-counting when summing item rows.
+        smetaRows.Add(new object?[] { "Раздел", "Позиция", "Ед.изм.", "Кол-во", "Цена, ₽", "Сумма, ₽", "Итого, ₽", "Примечание" });
 
         // Build a detailed structure by distributing the total across sections and items.
         var sections = BuildEstimateSections(area, estimate);
@@ -270,8 +272,7 @@ public class ProjectReportService : IProjectReportService
         // (Will be applied later after we compute rows.)
         var correction = 1m;
 
-        var firstItemRowIndex1Based = 0;
-        var lastItemRowIndex1Based = 0;
+        var itemRanges = new List<(int StartRow1Based, int EndRow1Based)>();
 
         // Pre-calc (with rounding) to ensure Excel totals match backend total.
         var roundedBase = new List<(EstimateSection Section, List<(EstimateLine Line, decimal RoundedUnitPrice)> Lines)>();
@@ -298,7 +299,7 @@ public class ProjectReportService : IProjectReportService
             var lines = sectionPack.Lines;
 
             // Section header
-            smetaRows.Add(new object?[] { section.Title, null, null, null, null, null, null });
+            smetaRows.Add(new object?[] { section.Title, null, null, null, null, null, null, null });
 
             var itemRowsStart = smetaRows.Count + 1; // next row (1-based)
 
@@ -316,20 +317,20 @@ public class ProjectReportService : IProjectReportService
                     qty,
                     unitPrice,
                     new SimpleXlsxWriter.Formula($"D{rowIndex1Based}*E{rowIndex1Based}"),
+                    null,
                     item.Note
                 });
-
-                if (firstItemRowIndex1Based == 0) firstItemRowIndex1Based = smetaRows.Count;
-                lastItemRowIndex1Based = smetaRows.Count;
             }
 
             var itemRowsEnd = smetaRows.Count;
             if (itemRowsEnd >= itemRowsStart)
             {
+                itemRanges.Add((itemRowsStart, itemRowsEnd));
                 smetaRows.Add(new object?[]
                 {
                     null,
                     "Итого по разделу",
+                    null,
                     null,
                     null,
                     null,
@@ -339,13 +340,14 @@ public class ProjectReportService : IProjectReportService
             }
             else
             {
-                smetaRows.Add(new object?[] { null, "Итого по разделу", null, null, null, 0, null });
+                smetaRows.Add(new object?[] { null, "Итого по разделу", null, null, null, null, 0, null });
             }
         }
 
-        // Grand total
-        if (firstItemRowIndex1Based > 0 && lastItemRowIndex1Based >= firstItemRowIndex1Based)
+        // Grand total (sum only item rows to avoid double-counting section subtotals)
+        if (itemRanges.Count > 0)
         {
+            var sumParts = string.Join(",", itemRanges.Select(r => $"F{r.StartRow1Based}:F{r.EndRow1Based}"));
             smetaRows.Add(Array.Empty<object?>());
             smetaRows.Add(new object?[]
             {
@@ -354,10 +356,11 @@ public class ProjectReportService : IProjectReportService
                 null,
                 null,
                 null,
-                new SimpleXlsxWriter.Formula($"SUM(F{firstItemRowIndex1Based}:F{lastItemRowIndex1Based})"),
+                null,
+                new SimpleXlsxWriter.Formula($"SUM({sumParts})"),
                 null
             });
-            smetaRows.Add(new object?[] { null, "Контроль: итог должен совпадать с расчётом (±1%)", null, null, null, totalTarget, null });
+            smetaRows.Add(new object?[] { null, "Контроль: итог должен совпадать с расчётом (±1%)", null, null, null, null, totalTarget, null });
         }
 
         return SimpleXlsxWriter.CreateWorkbook(new[]
@@ -453,9 +456,6 @@ public class ProjectReportService : IProjectReportService
         var a = areaM2 <= 0 ? 0m : areaM2;
 
         // Use the same idea of options that affect the factor, but output Russian notes.
-        var factorNotes = estimate.Items.Select(i => i.Title).ToList();
-        var noteSuffix = factorNotes.Count == 0 ? null : $"Факторы: {string.Join("; ", factorNotes)}";
-
         var sections = new List<EstimateSection>
         {
             new("Проектирование и подготовка", new List<EstimateLine>
@@ -492,7 +492,7 @@ public class ProjectReportService : IProjectReportService
             }),
             new("Окна и фасадные элементы", new List<EstimateLine>
             {
-                new("Окна (комплект/настройки)", "компл.", 1, 45000, noteSuffix),
+                new("Окна (комплект/настройки)", "компл.", 1, 45000, null),
                 new("Откосы и подоконники", "м.п.", RoundQty(a * 0.12m), 2400, null)
             }),
             new("Меблировка и оснащение", new List<EstimateLine>
