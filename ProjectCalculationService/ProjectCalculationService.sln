@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectCalculationService.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectCalculationService.DataAccess", "ProjectCalculationService.DataAccess\ProjectCalculationService.DataAccess.csproj", "{D1B79237-3A07-4C2A-B9A1-5A2F91C1D6C4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectCalculationService.Tests", "ProjectCalculationService.Tests\ProjectCalculationService.Tests.csproj", "{B7A4E1B8-6C4A-4B63-9D25-1E252B1DCB14}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{D1B79237-3A07-4C2A-B9A1-5A2F91C1D6C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1B79237-3A07-4C2A-B9A1-5A2F91C1D6C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1B79237-3A07-4C2A-B9A1-5A2F91C1D6C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7A4E1B8-6C4A-4B63-9D25-1E252B1DCB14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7A4E1B8-6C4A-4B63-9D25-1E252B1DCB14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7A4E1B8-6C4A-4B63-9D25-1E252B1DCB14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7A4E1B8-6C4A-4B63-9D25-1E252B1DCB14}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
 
