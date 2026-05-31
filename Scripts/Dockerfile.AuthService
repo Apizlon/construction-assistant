@@ -3,7 +3,6 @@ WORKDIR /src
 
 COPY ["AuthService/AuthService.Api/AuthService.Api.csproj", "AuthService/AuthService.Api/"]
 COPY ["AuthService/AuthService.Application/AuthService.Application.csproj", "AuthService/AuthService.Application/"]
-COPY ["AuthService/AuthService.DataAccess/AuthService.DataAccess.csproj", "AuthService/AuthService.DataAccess/"]
 
 RUN dotnet restore "AuthService/AuthService.Api/AuthService.Api.csproj"
 
