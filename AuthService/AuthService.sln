@@ -4,8 +4,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.Api", "AuthServ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.Application", "AuthService.Application\AuthService.Application.csproj", "{4627DFD8-65AB-4E18-BEB7-C35672A9EC99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.DataAccess", "AuthService.DataAccess\AuthService.DataAccess.csproj", "{D4B3330B-4534-430B-AB4C-02D7E522382C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,9 +18,5 @@ Global
 		{4627DFD8-65AB-4E18-BEB7-C35672A9EC99}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4627DFD8-65AB-4E18-BEB7-C35672A9EC99}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4627DFD8-65AB-4E18-BEB7-C35672A9EC99}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D4B3330B-4534-430B-AB4C-02D7E522382C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D4B3330B-4534-430B-AB4C-02D7E522382C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D4B3330B-4534-430B-AB4C-02D7E522382C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D4B3330B-4534-430B-AB4C-02D7E522382C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
